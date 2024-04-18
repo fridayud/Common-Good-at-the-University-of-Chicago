@@ -1,0 +1,80 @@
+# AWS Terraform Deployment with Jenkins CI/CD
+
+This repository contains the necessary configuration files to deploy AWS resources using Terraform, managed through a Jenkins CI/CD pipeline. The setup includes a Lambda function triggered by a cron job to execute every 5 minutes.
+
+## Repository Structure
+
+- `/terraform`: Contains all Terraform configuration files.
+  - `main.tf`: Main Terraform configuration file defining AWS resources.
+  - `variables.tf`: (If applicable) Defines variables used in Terraform configurations.
+  - `outputs.tf`: (If applicable) Defines outputs after Terraform execution.
+  - `provider.tf`: Specifies the Terraform provider and required versions.
+- `lambda_function.py`: Source code for the AWS Lambda function.
+- `lambda_function.zip`: Zipped Lambda function for deployment.
+- `Jenkinsfile`: Defines the Jenkins pipeline for continuous integration and deployment.
+- `README.md`: This file, explaining the project setup and usage.
+
+## Terraform Configuration (main.tf)
+
+This file defines the following AWS resources:
+
+- **S3 Buckets**: Two S3 buckets for storing the Lambda function code and Terraform state.
+- **IAM Role**: An IAM role with the necessary permissions for the Lambda function to execute.
+- **Lambda Function**: The AWS Lambda function, including its configuration and the S3 bucket location of its code.
+- **CloudWatch Event Rule**: A rule that triggers the Lambda function every 5 minutes.
+- **Permissions**: Permissions for CloudWatch to invoke the Lambda function.
+
+### Important Lines of Code in `main.tf`
+
+- `resource "aws_lambda_function" "example_lambda"`: Defines the Lambda function.
+- `schedule_expression = "cron(*/5 * * * ? *)"`: Sets the CloudWatch event trigger to every 5 minutes.
+
+## Jenkinsfile
+
+Defines a pipeline with several stages:
+
+- **Checkout**: Checks out the source code from GitHub.
+- **Initialize Terraform**: Runs `terraform init` to initialize a Terraform working directory.
+- **Apply Terraform**: Executes `terraform apply -auto-approve` to deploy the infrastructure.
+- **Cleanup**: Optional cleanup after the job execution.
+
+### Jenkins Pipeline Stages
+
+- `stage('Checkout')`: Clones the repository.
+- `stage('Apply Terraform')`: Deploys changes using Terraform.
+
+## Setup Instructions
+
+### Prerequisites
+
+- AWS CLI installed and configured.
+- Terraform installed.
+- Jenkins with the Terraform plugin installed.
+- Credentials configured in Jenkins for AWS and GitHub access.
+
+### Steps to Deploy
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/your-username/your-repo.git
+Zip the Lambda Code:
+Navigate to the repository directory and zip the Lambda function:
+bash
+Copy code
+zip lambda_function.zip lambda_function.py
+Push Changes:
+After making any changes, push them back to your repository:
+bash
+Copy code
+git add .
+git commit -m "Commit message"
+git push origin main
+Run Jenkins Pipeline:
+Ensure Jenkins is set up to watch your GitHub repository.
+Trigger a build either manually or by pushing changes to your repository.
+Best Practices
+Secure Handling of Credentials: Never hard-code credentials. Use Jenkins credentials store.
+Terraform State Management: Use remote state management (e.g., S3 backend) for collaboration.
+Resource Cleanup: Consider automating the cleanup of resources to avoid unnecessary charges.
+Conclusion
+This setup provides a robust example of using Infrastructure as Code (IaC) to manage AWS resources through a CI/CD pipeline, facilitating best practices in automation and deployment.
